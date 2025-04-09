@@ -10,7 +10,7 @@ Created with entropy by **ColdCore** (developer) & **ChatGPT** (help dev / brain
 ## 🛠 Install (multi-distro)
 
 ```bash
-git clone https://github.com/tuonome/feedvoid.git
+git clone https://github.com/coldcore-linux/feedvoid.git
 cd feedvoid
 chmod +x feedvoid install_feedvoid.sh
 sudo ./install_feedvoid.sh
