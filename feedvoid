@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+
+import sys
+import time
+import random
+import argparse
+import math
+import os
+from tkinter import Tk, Canvas, Label, Frame
+
+# FeedVoid quotes
+LINES = [
+    "Void is calm.",
+    "Bits fade.",
+    "Nothing moves.",
+    "All is zero.",
+    "Still you give.",
+    "No reason.",
+    "Pure loop.",
+    "Null within."
+]
+
+# --- TTY Mode ---
+def run_tty():
+    print(":: ColdCore :: Feeding the Void\n")
+    block = "█"
+    max_len = 40
+    step = 0
+
+    while True:
+        time.sleep(0.15)
+        step = (step + 1) % (max_len + 1)
+        bar = block * step + ' ' * (max_len - step)
+        output = f"[{bar}]"
+
+        if step == max_len:
+            msg = random.choice(LINES)
+            output += f"  :: {msg}"
+
+        print("\r" + output + " ", end="")
+        os.system("dd if=/dev/zero of=/dev/null bs=1M count=1 status=none")
+
+# --- GUI Mode ---
+def run_gui():
+    root = Tk()
+    root.title("FeedVoid - ColdCore Ritual")
+    root.geometry("500x300")
+    root.configure(bg="#ddeeff")
+    root.resizable(False, False)
+
+    frame = Frame(root, bg="#ddeeff")
+    frame.pack(expand=True, fill='both')
+
+    title = Label(frame, text=":: ColdBox :: Feeding the Void", font=("Courier", 16, "bold"), bg="#ddeeff", fg="#003366")
+    title.pack(pady=10)
+
+    canvas = Canvas(frame, width=400, height=20, bg="white", highlightthickness=1, highlightbackground="#99bbff")
+    canvas.pack(pady=10)
+
+    msg_label = Label(frame, text="", font=("Courier", 12), bg="#ddeeff", fg="#003366")
+    msg_label.pack()
+
+    cube_canvas = Canvas(frame, width=200, height=150, bg="#ddeeff", highlightthickness=0)
+    cube_canvas.pack(pady=10)
+
+    def project(x, y, z, angle_x, angle_y):
+        cos_x, sin_x = math.cos(angle_x), math.sin(angle_x)
+        cos_y, sin_y = math.cos(angle_y), math.sin(angle_y)
+
+        xz = x * cos_y - z * sin_y
+        zz = x * sin_y + z * cos_y
+        yz = y * cos_x - zz * sin_x
+        zz = y * sin_x + zz * cos_x
+
+        factor = 100 / (zz + 4)
+        x_proj = xz * factor + 100
+        y_proj = yz * factor + 75
+        return (x_proj, y_proj)
+
+    step = 0
+    angle = 0
+
+    def update_loop():
+        nonlocal step, angle
+        bar_len = (step % 41) * 10
+        canvas.delete("all")
+        canvas.create_rectangle(0, 0, bar_len, 20, fill="#3366cc")
+
+        cube_canvas.delete("all")
+        size = 1
+        verts = [
+            (-size, -size, -size), (size, -size, -size),
+            (size, size, -size), (-size, size, -size),
+            (-size, -size, size), (size, -size, size),
+            (size, size, size), (-size, size, size),
+        ]
+        edges = [
+            (0,1),(1,2),(2,3),(3,0),
+            (4,5),(5,6),(6,7),(7,4),
+            (0,4),(1,5),(2,6),(3,7)
+        ]
+
+        projected = [project(x, y, z, angle, angle * 0.7) for (x, y, z) in verts]
+        for a, b in edges:
+            x1, y1 = projected[a]
+            x2, y2 = projected[b]
+            cube_canvas.create_line(x1, y1, x2, y2, fill="#003366")
+
+        if step % 40 == 0:
+            msg = random.choice(LINES)
+            msg_label.config(text=f":: {msg}")
+
+        step += 1
+        angle += 0.05
+        root.after(100, update_loop)
+
+    update_loop()
+    root.mainloop()
+
+# --- Help with Philosophy ---
+def print_help():
+    print("""FeedVoid - Ritual binary nullifier by ColdCore
+
+Usage:
+  feedvoid           TTY mode (text ritual)
+  feedvoid --gui     GUI mode (visual Aero ritual)
+
+Easter Egg:
+  --help             Feeding the Void... with help.
+
+Philosophy:
+  In a system of endless loops, giving to the void is not waste...
+  It is purpose. To feed what cannot be filled, endlessly,
+  is to understand the nature of computation itself.
+
+Ritual:
+  Each cycle executes `dd if=/dev/zero of=/dev/null`
+  to symbolically feed the digital void.
+
+Created with entropy by ColdCore (developer) & ChatGPT (help dev/help brainstormer)
+""")
+
+# --- Main ---
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--gui", action="store_true")
+    parser.add_argument("--help", action="store_true")
+    args = parser.parse_args()
+
+    if args.help:
+        print_help()
+    elif args.gui:
+        run_gui()
+    else:
+        run_tty()
